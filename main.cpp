@@ -5,6 +5,7 @@
 #include "mbed.h"
 #include "hcsr04.h"
 #include "math.h"
+
 //IO declarations
 Serial pc(USBTX, USBRX); //PC UART
 //Supersonic Sensor Declaration
@@ -12,6 +13,10 @@ HCSR04 xsensor(D8,D9);//ECHO Pin=D9, TRIG Pin=D8
 HCSR04 ysensor(D7,D6);//ECHO Pin=D7, TRIG Pin=D6
 //Bluetooth module declaration
 Serial HC06(PTC15, PTC14); //BT TX, RX
+//BOARD LEDs
+DigitalOut RLed(LED1);                      //Onboard Red LED = Shelf Out of Stock
+DigitalOut GLed(LED2);                      //Onboard Green LED = All OK
+DigitalOut BLed(LED3);   
 //Instantiate Send and Receive Variables
 char snd[512], rcv[1000]; //send and receive buffer
 //Instantiate Variable for the Size of the Room, and distance from walls in the x and y direction
@@ -71,7 +76,7 @@ int main()
         initial_y_column=round(y_distance/100);
         HC06.printf("Home Location Set!\n");
     //Looping For Direction Change
-    int Done=0;
+    int old_distance=0;
     while(1){
     //Ultrasound Sensor (HC-SR04) #1 Initialization
         obstacles=0;
@@ -84,6 +89,24 @@ int main()
         y_distance = ysensor.get_dist_cm();     
         current_row=round(x_distance/100);
         current_column=round(y_distance/100);
+        //Finding whether the current distance from home is less than the previous distance, and lighting
+        //the corresponding LED color. If closer, Green, same, Blue, farther, Red
+        if(old_distance>(abs(current_row-initial_x_row)+abs(current_column-initial_y_column))){
+            RLed = 0;
+            BLed = 0;
+            GLed = 1;
+        }
+        if(old_distance<(abs(current_row-initial_x_row)+abs(current_column-initial_y_column))){
+            RLed = 1;
+            BLed = 0;
+            GLed = 0;
+        }
+        else{
+            RLed = 0;
+            BLed = 1;
+            GLed = 0;
+        }
+        //Finding the direction towards the home location from the current location
         HC06.puts("Directions to Home:");
         if (current_column<initial_y_column){
             if (current_row<initial_x_row){
@@ -116,6 +139,7 @@ int main()
         else {
             HC06.puts("You Are Home\n");
         }
+        //Finding if there are any close obstacles, and sending a warning accordingly
         HC06.puts("Obstacles:");
         if (current_column==0){
             obstacles=obstacles+1;
@@ -142,6 +166,7 @@ int main()
         if(obstacles==0){
              HC06.puts("No Obstacles");
         }
+        //Finding if the user's current position is outside the input room size.
         HC06.puts("\nErrors:");
         if(current_column>roomwidth || current_row>roomlength){
             HC06.puts("Distance from Wall Inconsistent, User has left room?\n");
