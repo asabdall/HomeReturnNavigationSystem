@@ -6,6 +6,7 @@
 #include <sstream>
 #include <stdio.h>
 #include <string.h>
+#include "FXOS8700Q.h"
 
 //Port And Module Declarations
 
@@ -16,11 +17,16 @@ Serial HC06(PTC15, PTC14); // Bluetooth Module declaration
 DigitalOut GLed(LED1);//Green LED Declaration
 DigitalOut RLed(LED2);//Red LED Declaration
 DigitalOut Yled(LED3);//Yellow LED Declaration
+I2C i2c(PTE25, PTE24);
+FXOS8700QMagnetometer mag(i2c, FXOS8700CQ_SLAVE_ADDR1);
 
 //Variable Declarations
 
 char snd[512], rcv[1000]; // send and receive buffer
 int initial_x_row, initial_y_column, x_distance, y_distance, roomwidth,roomlength, current_row, current_column;
+int initial_height;
+motion_data_counts_t mag_raw;
+int16_t raZ;
 
 //Function Declarations
 
@@ -28,8 +34,11 @@ void room_size_printout(int printitem, char *printelement);
 int LED_Displacement_Indicator(int distance, int row, int column, int old_row,int old_column);
 void Obstacle_Output(int row, int column, int width,int length);       
 void Error_Output(int row, int column, int width,int length) ;
+void Device_Height_Output(int starting_height);
 
 int main() {
+  //initializing magnemometer
+  mag.enable();
   // Program Menu
   HC06.printf("-----Home Return Navigation System-----\n"); // Printing Title of Project to the Phone
   HC06.printf("Group Members: Ahmed Abdalla, Reza Soltani, Nujhat Tabassum\n"); // Printing Members of the Project to the Phone
@@ -63,11 +72,13 @@ int main() {
   y_distance = ysensor.get_dist_cm();
   initial_x_row = round(x_distance / 100);
   initial_y_column = round(y_distance / 100);
+  initial_height=mag.getZ(raZ);
   HC06.printf("Home Location Set!\n");
   // Looping For Direction Change
   int old_distance = 0;
   while (1) {
     // Ultrasound Sensor (HC-SR04) #1 Initialization
+    Device_Height_Output(initial_height);
     xsensor.start();
     ThisThread::sleep_for(500);
     ysensor.start();
@@ -187,3 +198,19 @@ void Error_Output(int row, int column, int width,int length) {
       HC06.puts("None\n");
     }
 }   
+
+void Device_Height_Output(int starting_height){
+    int16_t raZ;
+    int height_good=0;
+    mag.getZ(raZ);
+    while(height_good==0)
+        if((raZ-starting_height)>25){
+            HC06.puts("\nBOARD TOO LOW, MOVE UP");
+        }
+        else if((raZ-starting_height)<-25){
+            HC06.puts("\nBOARD TOO HIGH, MOVE DOWN");
+        }
+        else{
+            height_good=1;
+        }
+}
