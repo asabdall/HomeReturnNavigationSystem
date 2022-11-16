@@ -56,9 +56,9 @@ int main() {
   // Setting Initial Position
   HC06.printf("Setting Home Location...\n");
   xsensor.start();
-  wait_ms(500);
+  ThisThread::sleep_for(500);
   ysensor.start();
-  wait_ms(500);
+  ThisThread::sleep_for(500);
   x_distance = xsensor.get_dist_cm();
   y_distance = ysensor.get_dist_cm();
   initial_x_row = round(x_distance / 100);
@@ -69,9 +69,9 @@ int main() {
   while (1) {
     // Ultrasound Sensor (HC-SR04) #1 Initialization
     xsensor.start();
-    wait_ms(500);
+    ThisThread::sleep_for(500);
     ysensor.start();
-    wait_ms(500);
+    ThisThread::sleep_for(500);
     // Calculating Distance Percentage Remaining for Sensor # 1
     x_distance = xsensor.get_dist_cm();
     y_distance = ysensor.get_dist_cm();
@@ -87,7 +87,7 @@ int main() {
     // Finding if the user's current position is outside the input room size.
     Error_Output(current_row, current_column,roomwidth,roomlength) ;
     HC06.puts("\n\n----------------------------\n\n");
-    wait(5);
+    ThisThread::sleep_for(5000);
   }
 }
 
