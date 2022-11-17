@@ -24,8 +24,6 @@ FXOS8700QAccelerometer acc(i2c, FXOS8700CQ_SLAVE_ADDR1);
 
 char snd[512], rcv[1000]; // send and receive buffer
 int initial_x_row, initial_y_column, x_distance, y_distance, roomwidth,roomlength, current_row, current_column;
-motion_data_counts_t mag_raw;
-int16_t raZ, initial_height;
 
 //Function Declarations
 
@@ -33,12 +31,10 @@ void room_size_printout(int printitem, char *printelement);
 int LED_Displacement_Indicator(int distance, int row, int column, int old_row,int old_column);
 void Obstacle_Output(int row, int column, int width,int length);       
 void Error_Output(int row, int column, int width,int length) ;
-void Device_Height_Output(int16_t starting_height);
 void Device_Levelness_Output();
 
 int main() {
   //initializing magnemometer
-  mag.enable();
   acc.enable();
   // Program Menu
   HC06.printf("-----Home Return Navigation System-----\n"); // Printing Title of Project to the Phone
@@ -73,14 +69,11 @@ int main() {
   y_distance = ysensor.get_dist_cm();
   initial_x_row = round(x_distance / 100);
   initial_y_column = round(y_distance / 100);
-  mag.getAxis(mag_raw);
-  mag.getZ(initial_height);
   HC06.printf("Home Location Set!\n");
   // Looping For Direction Change
   int old_distance = 0;
   while (1) {
     // Ultrasound Sensor (HC-SR04) #1 Initialization
-    Device_Height_Output(initial_height);
     Device_Levelness_Output();
     xsensor.start();
     ThisThread::sleep_for(500);
@@ -201,32 +194,13 @@ void Error_Output(int row, int column, int width,int length) {
       HC06.puts("None\n");
     }
 }   
-
-void Device_Height_Output(int16_t starting_height){
-    int16_t raZ;
-    int height_good=0;
-    while(height_good==0){
-        mag.getAxis(mag_raw);
-        mag.getZ(raZ);
-        if((raZ-starting_height)>50){
-            HC06.puts("\nBOARD TOO HIGH, MOVE DOWN");
-        }
-        else if((raZ-starting_height)<-50){
-            HC06.puts("\nBOARD TOO LOW, MOVE UP");
-        }
-        else{
-            height_good=1;
-        }
-    }
-}
 void Device_Levelness_Output(){
     float x, y;
     int level_good=0;
     while(level_good==0){
         acc.getX(x);
         acc.getY(y);
-        HC06.printf("\nx: %d y:%d  ",);
-        if(abs(y)>40 || abs(x)>40){
+        if(abs(y)>.40 || abs(x)>.40){
             HC06.puts("\nBOARD IS NOT LEVEL, LEVEL OUT BOARD");
         }
         else{
