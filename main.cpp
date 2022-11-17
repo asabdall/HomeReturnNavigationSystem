@@ -116,17 +116,14 @@ int LED_Displacement_Indicator(int distance, int row, int column, int old_row,
     RLed = 0;
     Yled = 1;
     GLed = 1;
-    HC06.printf("\nCloser\n");
   } else if (distance < (abs(row - old_row) + abs(column - old_column))) {
     RLed = 1;
     Yled = 1;
     GLed = 0;
-    HC06.printf("\nFarther\n");
   } else {
     RLed = 0;
     Yled = 1;
     GLed = 0;
-    HC06.printf("\nSame\n");
   }
   return (abs(row - old_row) + abs(column - old_column));
 }
