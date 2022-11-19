@@ -94,7 +94,7 @@ int main() {
     // Finding if the user's current position is outside the input room size.
     Error_Output(current_row, current_column,roomwidth,roomlength) ;
     HC06.puts("\n\n----------------------------\n\n");
-    ThisThread::sleep_for(2000);
+    ThisThread::sleep_for(6000);
   }
 }
 
@@ -198,10 +198,11 @@ void Device_Levelness_Output(){
         acc.getX(x);
         acc.getY(y);
         if(abs(y)>.40 || abs(x)>.40){
-            HC06.puts("\nBOARD IS NOT LEVEL, LEVEL OUT BOARD");
+            HC06.puts("\nBOARD IS NOT LEVEL, LEVEL OUT BOARD\n");
         }
         else{
             level_good=1;
         }
+    ThisThread::sleep_for(500);  
     }
 }
