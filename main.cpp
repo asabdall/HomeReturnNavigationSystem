@@ -82,6 +82,7 @@ int main() {
     // Calculating Distance Percentage Remaining for Sensor # 1
     x_distance = xsensor.get_dist_cm();
     y_distance = ysensor.get_dist_cm();
+
     current_row = round(x_distance / 100);
     current_column = round(y_distance / 100);
     // Indicating Whether the user is closer (Green), farther(Red), or the same distance from home (Yellow) with LEDs
@@ -94,7 +95,7 @@ int main() {
     // Finding if the user's current position is outside the input room size.
     Error_Output(current_row, current_column,roomwidth,roomlength) ;
     HC06.puts("\n\n----------------------------\n\n");
-    ThisThread::sleep_for(6000);
+    ThisThread::sleep_for(2000);
   }
 }
 
@@ -103,6 +104,10 @@ void room_size_printout(int printitem, char *printelement) {
   strs << printitem;
   string temp_str = strs.str();
   char *char_type = (char *)temp_str.c_str();
+  if (printitem>40){
+       HC06.printf("Room Is Too Large!!\n Reset in Different Room");
+       ThisThread::sleep_for(1000000);
+  }
   HC06.puts("Room ");
   HC06.puts(printelement);
   HC06.puts(" Is: ");
@@ -129,7 +134,7 @@ int LED_Displacement_Indicator(int distance, int row, int column, int old_row,
 }
 
 void Direction_To_Home_Output(int row, int column, int old_row,int old_column) {
-    HC06.puts("Directions to Home:");
+    HC06.puts("Directions to Home:");  
     if (column < old_column) {
       if (row < old_row) {
         HC06.puts("Move Right & Backwards\n");
