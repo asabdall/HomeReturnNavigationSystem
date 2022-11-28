@@ -104,8 +104,8 @@ void room_size_printout(int printitem, char *printelement) {
   strs << printitem;
   string temp_str = strs.str();
   char *char_type = (char *)temp_str.c_str();
-  if (printitem>40){
-       HC06.printf("Room Is Too Large!!\n Reset in Different Room");
+  if (printitem>4){
+       HC06.puts("Room Is Too Large!!\n Reset in Different Room");
        ThisThread::sleep_for(1000000);
   }
   HC06.puts("Room ");
