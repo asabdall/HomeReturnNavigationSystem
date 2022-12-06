@@ -18,7 +18,6 @@ DigitalOut GLed(LED1);//Green LED Declaration
 DigitalOut RLed(LED2);//Red LED Declaration
 DigitalOut Yled(LED3);//Yellow LED Declaration
 I2C i2c(PTE25, PTE24);
-FXOS8700QMagnetometer mag(i2c, FXOS8700CQ_SLAVE_ADDR1);
 FXOS8700QAccelerometer acc(i2c, FXOS8700CQ_SLAVE_ADDR1);
 //Variable Declarations
 
@@ -32,6 +31,7 @@ int LED_Displacement_Indicator(int distance, int row, int column, int old_row,in
 void Obstacle_Output(int row, int column, int width,int length);       
 void Error_Output(int row, int column, int width,int length) ;
 void Device_Levelness_Output();
+void Direction_To_Home_Output(int row, int column, int old_row,int old_column);
 
 int main() {
   //initializing magnemometer
@@ -49,7 +49,6 @@ int main() {
   HC06.gets(rcv, 1000);   // Receiving the room size input from the user's phone
   roomlength = stoi(rcv); // Setting the input equal to the input from the phone
   room_size_printout(roomlength, (char *)"Length");
-  void Direction_To_Home_Output(int row, int column, int old_row,int old_column);
   int ishome = 0;
   // Prompting User to choose when they have reached their desired home location
   while (ishome == 0) {
@@ -62,7 +61,6 @@ int main() {
   // Setting Initial Position
   HC06.printf("Setting Home Location...\n");
   xsensor.start();
-  ThisThread::sleep_for(500);
   ysensor.start();
   ThisThread::sleep_for(500);
   x_distance = xsensor.get_dist_cm();
@@ -76,21 +74,18 @@ int main() {
     // Ultrasound Sensor (HC-SR04) #1 Initialization
     Device_Levelness_Output();
     xsensor.start();
-    ThisThread::sleep_for(500);
     ysensor.start();
     ThisThread::sleep_for(500);
     // Calculating Distance Percentage Remaining for Sensor # 1
     x_distance = xsensor.get_dist_cm();
     y_distance = ysensor.get_dist_cm();
-
     current_row = round(x_distance / 100);
     current_column = round(y_distance / 100);
     // Indicating Whether the user is closer (Green), farther(Red), or the same distance from home (Yellow) with LEDs
     old_distance =LED_Displacement_Indicator(old_distance, current_row, current_column,initial_x_row, initial_y_column);
     // Finding the direction towards the home location from the current location
     Direction_To_Home_Output(current_row, current_column,initial_x_row, initial_y_column);
-    // Finding if there are any close obstacles, and sending a warning
-    // accordingly
+    // Finding if there are any close obstacles, and sending a warning accordingly
     Obstacle_Output(current_row, current_column,roomwidth,roomlength);
     // Finding if the user's current position is outside the input room size.
     Error_Output(current_row, current_column,roomwidth,roomlength) ;
